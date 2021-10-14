@@ -1,28 +1,132 @@
 #!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
+
 # (c) @AlbertEinsteinTG
 
+
+
+
 from pyrogram import filters, Client
+
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+
 from bot import Translation # pylint: disable=import-error
+
 from bot.database import Database # pylint: disable=import-error
+
+from pyrogram.errors import UserNotParticipant
+
+import os
 
 db = Database()
 
+AUTH_CHANNEL =  int(os.environ.get("F_SUB_CHANNEL"))
+
+
+
+
+
+
+
 @Client.on_message(filters.command(["start"]) & filters.private, group=1)
+
 async def start(bot, update):
-    
+
     try:
+
         file_uid = update.command[1]
+
     except IndexError:
+
         file_uid = False
+
     
+
     if file_uid:
-        file_id, file_name, file_caption, file_type = await db.get_file(file_uid)
-        
-        if (file_id or file_type) == None:
+
+        invite_link = await bot.create_chat_invite_link(int(AUTH_CHANNEL))
+
+        try:
+
+            user = await bot.get_chat_member(int(AUTH_CHANNEL), update.from_user.id)
+
+            if user.status == "kicked":
+
+                await bot.send_message(
+
+                    chat_id=update.from_user.id,
+
+                    text="Sorry Sir, You are Banned to use me.",
+
+                    parse_mode="markdown",
+
+                    disable_web_page_preview=True
+
+                )
+
+                return
+
+        except UserNotParticipant:
+
+            await bot.send_message(
+
+                chat_id=update.from_user.id,
+
+                text="നിങ്ങൾക്ക് ഈ ബോട്ട് വഴി സിനിമ ലഭിക്കണമെങ്കിൽ താഴെ കാണുന്ന '🔸 JOIN CHANNEL 🔸' എന്ന ബട്ടൺ ക്ലിക്ക് ചെയ്ത് ഞങ്ങളുടെ ചാനലിൽ ജോയിൻ ചെയ്ത ശേഷം  'Try again' എന്ന ബട്ടൻ ക്ലിക്ക് ചെയ്തു START ക്ലിക്ക് ചെയ്യുക",
+
+                reply_markup=InlineKeyboardMarkup(
+
+                    [
+
+                        [
+
+                            InlineKeyboardButton("🔸 JOIN CHANNEL 🔸", url=invite_link.invite_link)
+
+                        ],
+
+                        [
+
+                            InlineKeyboardButton("Try Again", url=f"https://telegram.dog/Samantha_Akkineni_RoBot?start={file_uid}")
+
+                        ]
+
+                    ]
+
+                ),
+
+                parse_mode="markdown"
+
+            )
+
             return
+
+        except Exception:
+
+            await bot.send_message(
+
+                chat_id=update.from_user.id,
+
+                text="Something went Wrong.",
+
+                parse_mode="markdown",
+
+                disable_web_page_preview=True
+
+            )
+
+            return
+
+        file_id, file_name, file_caption, file_type = await db.get_file(file_uid)
+
         
+
+        if (file_id or file_type) == None:
+
+            return
+
+        
+
         caption = file_caption if file_caption != ("" or None) else ("<code>" + file_name + "</code>")
         
         if file_type == "document":
