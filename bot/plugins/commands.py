@@ -41,7 +41,7 @@ async def start(bot, update):
                             InlineKeyboardButton("🔸 JOIN CHANNEL 🔸", url=invite_link.invite_link)
                         ],
                         [
-                            InlineKeyboardButton("Try Again", url=f"https://telegram.dog/CinemaTvofficial_Bot?start={file_uid}")
+                            InlineKeyboardButton("Try Again", url=f"https://t.me/Samantha_Akkineni_RoBot?start={file_uid}")
                         ]
                     ]
                 ),
